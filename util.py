@@ -1,9 +1,9 @@
 from pyspark.sql import SparkSession
 
 # Create SparkSession
-spark_session = SparkSession.builder \
-    .master("local[1]") \
-    .appName("Myspark application") \
+spark_session = SparkSession.builder
+    .master("local[1]")
+    .appName("Myspark application")
     .getOrCreate()
 
 def getSpark():
@@ -50,6 +50,6 @@ def tdrop(tname):
 def tupdate(df,tname,pk_list):
 	spark=getSpark
 	tdf=tread(tname)
-	tdf.join(df,pk_list,"left").filter(df.pk_list.isNull).union(df)
-	df.write.mode(SaveMode.Overwrite).saveAsTable(tname)
+	new_df=tdf.join(df,pk_list,"left").filter(df.pk_list.isNull).union(df)
+	new_df.write.mode(SaveMode.Overwrite).saveAsTable(tname)
 
