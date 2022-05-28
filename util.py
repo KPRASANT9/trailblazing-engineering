@@ -28,7 +28,7 @@ def fwrite(df,fpath,format,mode='Overwrite',delim=',',head=True):
 	elif format=='json':
 		df.write.mode(mode).json(fpath)
 
-# Reads data from Hive table  # We can enhance code to read data from diff DBs
+# Reads  data from Hive table  # We can enhance code to read data from diff DBs
 def tread(tname):
 	spark=getSpark()
 	df=spark.table(tname)
