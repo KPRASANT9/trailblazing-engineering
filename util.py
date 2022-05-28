@@ -50,4 +50,4 @@ def tupdate(df,tname,pk_list):
 	spark=getSpark()
 	tdf=tread(tname)
 	new_df=tdf.join(df,pk_list,"left").filter(df.pk_list.isNull).union(df)
-	new_df.write.mode(SaveMode.Overwrite).saveAsTable(tname)
+	new_df.write.mode("Overwrite").saveAsTable(tname)
