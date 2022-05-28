@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession
 spark_session = SparkSession.builder.master("local[1]").appName("Myspark application").getOrCreate()
 
 def getSpark():
-    #global spark_session
+    global spark_session
     return spark_session
 	
 # Reads different file formats 
