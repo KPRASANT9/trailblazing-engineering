@@ -73,7 +73,7 @@ def tupsert(df,tname,pk_list):
 #tupsert(df,tname,pk_list)
 	
 def join_key(pk_list):
-	
+	s =[]
 	for item in pk_list:
    		s.append('tdf.'+item+'='+'df.'+item)
 	jk=' && '.join(s)
