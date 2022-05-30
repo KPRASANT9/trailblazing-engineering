@@ -56,34 +56,25 @@ def tdrop(tname):
 #tdrop("fb")
 	
 # Updates data in table from DF, need more implementation and testing for large volume of data
-def tupdate(df,tname,pk_list):
+def tupsert(df,tname,pk_list):
 	tdf=tread(tname)
-	new_df=tdf.join(df3,pk_list,"left").filter(df3.pk_list.isNull()).union(df)
-	new_df.write.mode("Overwrite").saveAsTable(tname)
+	tmp_tbl=tname+"_tmp"
+	s =[]
+	for item in pk_list:
+   		s.append('tdf.'+item+'='+'df.'+item)
+	jk=' && '.join(s)
+	upd_df=tdf.join(df,jk,"leftanti").union(df)
+	twrite(tmp_df,upd_df)
+	df_tmp=tread(tmp_tbl)
+	twrite(df_tmp,tname)
 
-#twrite(df,"updtable")
-#tupdate(df3,"updtable","firstname")
-#tdf=tread("updtable")
-pk_list="firstname"
-
-#tread("updtable").show(10)
-#+---------+----------+--------+----------+------+------+
-#|firstname|middlename|lastname|       dob|gender|salary|
-#+---------+----------+--------+----------+------+------+
-#|   Robert|          |Williams|1978-09-05|     M|  4000|
-#|    Maria|      Anne|   Jones|1967-12-01|     F|  4000|
-#|      Jen|      Mary|   Brown|1980-02-17|     F|    -1|
-#|    James|          |   Smith|1991-04-01|     M|  3000|
-#|  Michael|      Rose|        |2000-05-19|     M|  4000|
-#+---------+----------+--------+----------+------+------+
-
-#df3.show(10)
-#+---------+----------+--------+----------+------+------+
-#|firstname|middlename|lastname|       dob|gender|salary|
-#+---------+----------+--------+----------+------+------+
-#|    James|          |   Smith|1991-04-01|     M|  1000|
-#|  Michael|      Rose|        |2000-05-19|     M|  1000|
-#|   Robert|          |Williams|1978-09-05|     M|  1000|
-#|    Maria|      Anne|   Jones|1967-12-01|     F|  1000|
-#|      Jen|      Mary|   Brown|1980-02-17|     F|  1000|
-#+---------+----------+--------+----------+------+------+
+#pk_list["emp_id","dept_id"]
+#tupsert(df,tname,pk_list)
+	
+def join_key(pk_list):
+	
+	for item in pk_list:
+   		s.append('tdf.'+item+'='+'df.'+item)
+	jk=' && '.join(s)
+	return jk
+#pk_list = ['id', 'name'] -->tdf.id=df.id && tdf.name=df.name
