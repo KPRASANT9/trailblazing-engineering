@@ -64,9 +64,10 @@ def tupsert(df,tname,pk_list):
    		s.append('tdf.'+item+'='+'df.'+item)
 	jk=' && '.join(s)
 	upd_df=tdf.join(df,jk,"leftanti").union(df)
-	twrite(tmp_df,upd_df)
+	twrite(upd_df,tmp_tbl)
 	df_tmp=tread(tmp_tbl)
 	twrite(df_tmp,tname)
+	tdrop(tmp_tbl)
 
 #pk_list["emp_id","dept_id"]
 #tupsert(df,tname,pk_list)
