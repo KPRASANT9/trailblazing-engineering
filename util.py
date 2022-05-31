@@ -64,6 +64,7 @@ def tupsert(df,tname,pk_list):
 	df_tmp=tread(tmp_tbl)
 	twrite(df_tmp,tname)
 	tdrop(tmp_tbl)
+	return None
 
 #pk_list["emp_id","dept_id"]
 #tupsert(df,tname,pk_list)
