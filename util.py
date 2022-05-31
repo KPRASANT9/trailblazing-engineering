@@ -59,11 +59,7 @@ def tdrop(tname):
 def tupsert(df,tname,pk_list):
 	tdf=tread(tname)
 	tmp_tbl=tname+"_tmp"
-	s =[]
-	for item in pk_list:
-   		s.append('tdf.'+item+'='+'df.'+item)
-	jk=' && '.join(s)
-	upd_df=tdf.join(df,jk,"leftanti").union(df)
+	upd_df=tdf.join(df,pk_list,"leftanti").union(df)
 	twrite(upd_df,tmp_tbl)
 	df_tmp=tread(tmp_tbl)
 	twrite(df_tmp,tname)
@@ -71,7 +67,8 @@ def tupsert(df,tname,pk_list):
 
 #pk_list["emp_id","dept_id"]
 #tupsert(df,tname,pk_list)
-	
+
+#buils join condition
 def join_key(pk_list):
 	s =[]
 	for item in pk_list:
