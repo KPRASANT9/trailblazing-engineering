@@ -55,7 +55,7 @@ def tdrop(tname):
 	getSpark().sql(table_name)
 #tdrop("fb")
 	
-# Updates data in table from DF, need more implementation and testing for large volume of data
+# Updates data in table from DF
 def tupsert(df,tname,pk_list):
 	tdf=tread(tname)
 	tmp_tbl=tname+"_tmp"
@@ -69,7 +69,7 @@ def tupsert(df,tname,pk_list):
 #pk_list["emp_id","dept_id"]
 #tupsert(df,tname,pk_list)
 
-#buils join condition
+#buidls join condition
 def join_key(pk_list):
 	s =[]
 	for item in pk_list:
