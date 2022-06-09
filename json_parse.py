@@ -23,7 +23,7 @@ def match_col(df, t_tbl):
 #JSON_PARSE, STRUCT and MAP flatten
 from pyspark.sql.functions import explode
 from pyspark.sql.functions import col
-def flatten_df(nested_df):
+def df_flatten(nested_df):
     nested_cols = [c[0] for c in nested_df.dtypes if c[1][:6] == 'struct']
     if not nested_cols:
         arr_cols = [c[0] for c in nested_df.dtypes if c[1][:5] == 'array']
@@ -40,6 +40,6 @@ def flatten_df(nested_df):
 
 #df2 = spark.read.json(complex.json)
 #df2.printSchema()
-#df5=flatten_df(df2)
+#df5=df_flatten(df2)
 #df5.printSchema()
 #df5.show()	
