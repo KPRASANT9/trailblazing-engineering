@@ -1,3 +1,6 @@
+from pyspark.sql.functions import explode
+from pyspark.sql.functions import col
+
 #Reading file for column rename and make Key value pair
 def col_rename(df, f):
     col_map = {k:v for k, v in (l.rstrip('\n').split('=') for l in open(f))}
