@@ -15,7 +15,7 @@ def match_col(df, t_tbl):
     t_df=spark.table(t_tbl)
     reqColumns =t_df.columns
     new_df=df.toDF(*reqColumns)
-	  return new_df
+    return new_df
 
 #match_col(df,tbl)
 
