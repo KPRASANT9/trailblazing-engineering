@@ -10,6 +10,8 @@ import { useTheme } from "./ThemeProvider";
 import { terminalWS } from "@/lib/websocket";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import EditServerDialog from "./EditServerDialog";
+import DeleteServerDialog from "./DeleteServerDialog";
 
 interface TerminalSession {
   id: string;
@@ -24,6 +26,11 @@ export default function TerminalManager() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Edit/Delete dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedServer, setSelectedServer] = useState<ServerConnection | null>(null);
   
   // Fetch servers from API
   const { data: servers = [], isLoading: loadingServers } = useQuery({
@@ -57,6 +64,48 @@ export default function TerminalManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/servers'] });
+      toast({ title: 'Server updated successfully' });
+      setEditDialogOpen(false);
+      setSelectedServer(null);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Failed to update server', 
+        description: error.message,
+        variant: 'destructive'
+      });
+    },
+  });
+
+  // Delete server mutation
+  const deleteServerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest('DELETE', `/api/servers/${id}`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/servers'] });
+      toast({ title: 'Server deleted successfully' });
+      setDeleteDialogOpen(false);
+      setSelectedServer(null);
+      
+      // Disconnect any active sessions for this server
+      if (selectedServer) {
+        setConnectionStates(prev => {
+          const { [selectedServer.id]: removed, ...rest } = prev;
+          return rest;
+        });
+        
+        // Remove terminal sessions for deleted server
+        setTerminalSessions(prev => prev.filter(session => session.serverId !== selectedServer.id));
+      }
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Failed to delete server', 
+        description: error.message,
+        variant: 'destructive'
+      });
     },
   });
 
@@ -137,6 +186,38 @@ export default function TerminalManager() {
 
   const handleAddServer = (serverData: any) => {
     addServerMutation.mutate(serverData);
+  };
+
+  const handleEditServer = (serverId: string) => {
+    const server = Array.isArray(servers) ? servers.find((s: any) => s.id === serverId) : null;
+    if (server) {
+      setSelectedServer({
+        ...server,
+        status: connectionStates[server.id] || 'disconnected'
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  const handleUpdateServer = (id: string, updates: any) => {
+    updateServerMutation.mutate({ id, ...updates });
+  };
+
+  const handleDeleteServer = (serverId: string) => {
+    const server = Array.isArray(servers) ? servers.find((s: any) => s.id === serverId) : null;
+    if (server) {
+      setSelectedServer({
+        ...server,
+        status: connectionStates[server.id] || 'disconnected'
+      });
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedServer) {
+      deleteServerMutation.mutate(selectedServer.id);
+    }
   };
 
   const handleConnectServer = (serverId: string) => {
@@ -237,7 +318,7 @@ export default function TerminalManager() {
           })) : []}
           onAddServer={handleAddServer}
           onConnectServer={handleConnectServer}
-          onEditServer={(id) => console.log('Editing server:', id)}
+          onEditServer={handleEditServer}
           onOpenTerminal={handleOpenTerminal}
         />
         <div className="flex flex-col flex-1">
@@ -299,6 +380,26 @@ export default function TerminalManager() {
           </main>
         </div>
       </div>
+
+      {/* Edit Server Dialog */}
+      <EditServerDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        server={selectedServer}
+        onUpdateServer={handleUpdateServer}
+        onDeleteServer={handleDeleteServer}
+        isUpdating={updateServerMutation.isPending}
+        isDeleting={deleteServerMutation.isPending}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteServerDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        serverName={selectedServer?.name || ''}
+        onConfirmDelete={handleConfirmDelete}
+        isDeleting={deleteServerMutation.isPending}
+      />
     </SidebarProvider>
   );
 }

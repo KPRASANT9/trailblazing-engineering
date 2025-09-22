@@ -68,10 +68,13 @@ export class MemStorage implements IStorage {
   async createServer(insertServer: InsertServer): Promise<Server> {
     const id = randomUUID();
     const server: Server = {
-      ...insertServer,
-      port: insertServer.port ?? 22,
-      privateKey: insertServer.privateKey ?? null,
       id,
+      name: insertServer.name,
+      username: insertServer.username,
+      host: insertServer.host,
+      port: insertServer.port ?? 22,
+      passwordEncrypted: insertServer.password, // MemStorage uses plaintext for dev
+      privateKeyEncrypted: insertServer.privateKey || null,
       createdAt: new Date(),
       lastConnected: null,
       isActive: true,
@@ -92,10 +95,10 @@ export class MemStorage implements IStorage {
   async getServerCredentials(id: string): Promise<{ password: string; privateKey?: string } | undefined> {
     const server = this.servers.get(id);
     if (!server) return undefined;
-    // For MemStorage, credentials are stored in plaintext (for development only)
+    // For MemStorage, credentials are stored in plaintext in encrypted fields (for development only)
     return {
-      password: (server as any).password || '',
-      privateKey: (server as any).privateKey || undefined
+      password: server.passwordEncrypted || '',
+      privateKey: server.privateKeyEncrypted || undefined
     };
   }
 
@@ -222,8 +225,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteServer(id: string): Promise<boolean> {
     const result = await db
-      .update(servers)
-      .set({ isActive: false })
+      .delete(servers)
       .where(eq(servers.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }
